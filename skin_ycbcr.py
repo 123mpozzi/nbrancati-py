@@ -237,12 +237,12 @@ def calculateHist2N(plane1, plane2):
 # TODO: save different outputs images from C code, each one after a significant code block
 # and then do the same here and compare images to see where the algo is wrong 
 def skin_detect(image_in: str, image_out: str):
-  CrMin = 133
-  CrMax = 183
-  CbMin = 77
-  CbMax = 128
-  YMin = 0
-  YMax = 255
+  CrMin = float(133)
+  CrMax = float(183)
+  CbMin = float(77)
+  CbMax = float(128)
+  YMin = float(0)
+  YMax = float(255)
 
   try:
     source = cv2.imread(image_in, cv2.IMREAD_COLOR)
@@ -356,11 +356,17 @@ def skin_detect(image_in: str, image_out: str):
   else:
     maxb = bCb
     minb = bCr
-  hCr = CrMax - CrMin
-  hCb = CbMax - CbMin
+  hCr = float(CrMax - CrMin)
+  hCb = float(CbMax - CbMin)
   ACr = ((B + bCr) * hCr) / 2
   ACb = ((B + bCb) * hCb) / 2
 
+  print(f'\nY1 {Y1}')
+  print(f'\nY2 {Y2}')
+  print(f'\nY3 {Y3}')
+  print(f'\nhCr {hCr}')
+  print(f'hCb {hCb}')
+  print(f'CbMin {CbMin}')
   print(f'\nACr {ACr}')
   print(f'ACb {ACb}')
 
@@ -382,6 +388,10 @@ def skin_detect(image_in: str, image_out: str):
   HCrMask3 = np.logical_and(Y >= Y1, Y <= YMax)
   HCr3 = np.multiply(HCrMask3, CrMin + hCr * ((Y - YMax) / (Y1 - YMax)))
   HCr = HCr1 + HCr2 + HCr3
+  #HCr = np.logical_or(HCr1, np.logical_or(HCr2, HCr3))
+  print('\n HCR')
+  print(np.max(HCr))
+  print(np.min(HCr))
 
   # Calculate HCb
   HCbMask1 = np.logical_and(Y >= YMin, Y < Y2)
@@ -391,7 +401,15 @@ def skin_detect(image_in: str, image_out: str):
   HCbMask3 = np.logical_and(Y >= Y3, Y <= YMax)
   HCb3 = np.multiply(HCbMask3, CbMin + hCb * ((Y - Y3) / (YMax - Y3)))
   HCb = HCb1 + HCb2 + HCb3
+  print('\n HCB')
+  print(np.max(HCb))
+  print(np.min(HCb))
 
+
+  #print('NPMAX')
+  #print(np.max(np.uint8(HCb3)))
+  cv2.imwrite('hcr.png', HCr)
+  cv2.imwrite('hcb.png', HCb)
 
   dCr = Cr - CrMin
   DCr = HCr - CrMin
