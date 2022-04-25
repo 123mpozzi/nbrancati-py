@@ -499,7 +499,7 @@ def skin_detect(image_in: str, image_out: str):
   #CbS_i = CbS.astype(int)
   print(type(Cb.dtype))
   print(type(CbS.dtype))
-  mask6 = np.absolute(cv2.subtract(np.int8(Cb), np.int8(CbS))) <= J
+  mask6 = np.absolute(np.float64(Cb) - CbS).astype(np.uint8) <= J
   print('mask6')
   print(mask6.any())
   skinCond = np.logical_and(mask5, mask6)
