@@ -373,7 +373,7 @@ def skin_detect(image_in: str, image_out: str):
 
   print(time.time()-time_start)
 
-  Y = np.int8(y_plane)
+  Y = y_plane # max HCb is right with np.int8(y_plane)
   Cr = cr_plane
   Cb = cb_plane
 
@@ -406,7 +406,7 @@ def skin_detect(image_in: str, image_out: str):
 
   # Calculate HCb
   HCbMask1 = np.logical_and(Y >= YMin, Y < Y2)
-  HCb1 = np.multiply(HCbMask1, CbMin + hCb * ((Y - Y2) / (YMin - Y2)))
+  HCb1 = np.multiply(HCbMask1, CbMin + hCb * ((np.int8(Y) - Y2) / (YMin - Y2)))
   HCbMask2 = np.logical_and(Y >= Y2, Y < Y3)
   HCb2 = np.multiply(HCbMask2, CbMin)
   HCbMask3 = np.logical_and(Y >= Y3, Y <= YMax)
@@ -422,7 +422,7 @@ def skin_detect(image_in: str, image_out: str):
   #print('NPMAX')
   #print(np.max(np.uint8(HCb3)))
   cv2.imwrite('hcr.png', HCr)
-  cv2.imwrite('hcb.png', HCb1)
+  cv2.imwrite('hcb.png', HCb)
 
   dCr = Cr - CrMin
   DCr = HCr - CrMin
