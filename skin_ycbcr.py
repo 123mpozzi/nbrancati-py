@@ -262,9 +262,9 @@ def skin_detect(image_in: str, image_out: str):
   frame_rgb = source.copy()
   perc = width * height * 0.1 / 100
 
-  frame_ycbcr = cv2.cvtColor(frame_rgb, cv2.COLOR_BGR2YCR_CB)
+  frame_ycrcb = cv2.cvtColor(frame_rgb, cv2.COLOR_BGR2YCR_CB)
 
-  y_plane, cr_plane, cb_plane = cv2.split(frame_ycbcr)
+  y_plane, cr_plane, cb_plane = cv2.split(frame_ycrcb)
 
   histCb = calculateHist(cb_plane)
   histCr = calculateHist(cr_plane)
@@ -317,7 +317,7 @@ def skin_detect(image_in: str, image_out: str):
   if max_valCr != -1:
     if max_valCr > CrMax:
       max_valCr = CrMax
-    minMaxCr = calculateValueMinMaxY(frame_ycbcr, max_valCr, histYCr, 1)
+    minMaxCr = calculateValueMinMaxY(frame_ycrcb, max_valCr, histYCr, 1)
     if max_valCr < CrMax:
       CrMax = max_valCr
   print('minmaxCr')
@@ -327,7 +327,7 @@ def skin_detect(image_in: str, image_out: str):
   if min_valCb != -1:
     if min_valCb < CbMin:
       min_valCb = CbMin
-    minMaxCb = calculateValueMinMaxY(frame_ycbcr, min_valCb, histYCb, 2)
+    minMaxCb = calculateValueMinMaxY(frame_ycrcb, min_valCb, histYCb, 2)
     if min_valCb > CbMin:
       CbMin = min_valCb
 
@@ -373,9 +373,20 @@ def skin_detect(image_in: str, image_out: str):
 
   print(time.time()-time_start)
 
-  Y = y_plane
+  Y = np.int8(y_plane)
   Cr = cr_plane
   Cb = cb_plane
+
+  print(Y)
+  print('YYYYYYYYYY')
+  print(type(Y))
+  datt= (Y - Y2)
+  datb = np.clip(Y - Y2, 0, 255).astype(np.uint8)
+  # CbMin + hCb * ((Y - Y2) / (YMin - Y2))
+  print(datt)
+  print(datb)
+  print(np.max(datt))
+  print(np.min(datt))
 
   # Calculate HCr
   #print(Y >= YMin)
@@ -408,15 +419,16 @@ def skin_detect(image_in: str, image_out: str):
   #HCb1 = HCb1 + abs(np.min(HCb1))
   #print(np.min(HCb1))
 
-
   #print('NPMAX')
   #print(np.max(np.uint8(HCb3)))
   cv2.imwrite('hcr.png', HCr)
-  cv2.imwrite('hcb.png', np.uint8(HCb1))
+  cv2.imwrite('hcb.png', HCb1)
 
   dCr = Cr - CrMin
   DCr = HCr - CrMin
   DCb = CbMax - HCb
+
+  #cv2.imwrite('DCr.png', DCr)
 
   if ACr > ACb:
     D1Cr = DCr * ACb / ACr
