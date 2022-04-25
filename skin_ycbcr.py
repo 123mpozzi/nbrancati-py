@@ -15,6 +15,13 @@ ranges = (ranges1, ranges2)
 
 times = []
 
+# Subtract numpy arrays without wrapping when overflow
+# eg. As two uint8 values: 10-20 = 0 instead of 245
+def npsubtract(a, b):
+  x = a - b
+  x[b>a] = 0
+  return x
+
 
 # sort of the histogram
 def sortHist(iBins: list, values: list, num: int):
@@ -405,8 +412,9 @@ def skin_detect(image_in: str, image_out: str):
   print(np.min(HCr))
 
   # Calculate HCb
+  # arr[arr - subtract_me < threshold] = threshold
   HCbMask1 = np.logical_and(Y >= YMin, Y < Y2)
-  HCb1 = np.multiply(HCbMask1, CbMin + hCb * ((np.int8(Y) - Y2) / (YMin - Y2)))
+  HCb1 = np.multiply(HCbMask1, CbMin + hCb * ((np.int8(Y) - Y2) / (YMin - Y2))) # TODO: use cleaner approach to perform color subtraction / saturated subtraction
   HCbMask2 = np.logical_and(Y >= Y2, Y < Y3)
   HCb2 = np.multiply(HCbMask2, CbMin)
   HCbMask3 = np.logical_and(Y >= Y3, Y <= YMax)
@@ -443,6 +451,9 @@ def skin_detect(image_in: str, image_out: str):
   dCbS1 = np.multiply(mask1, np.multiply(dCr, alpha))
   dCbS2 = np.multiply(mask2, 255)
   dCbS = dCbS1 + dCbS2
+
+  cv2.imwrite('dCbS.png', dCbS)
+
   CbS = CbMax - dCbS
   print(CbS.any())
 
@@ -453,6 +464,9 @@ def skin_detect(image_in: str, image_out: str):
   print(Ivals.any())
   I = np.absolute(Ivals) * sf
   print(I.any())
+
+  cv2.imwrite('I.png', I)
+
   #I = abs((D1Cr + D1Cb) - (dCr + dCbS)) * sf
   # Condition C.1
   Jvals = np.multiply(dCbS, np.true_divide((dCbS + dCr), (D1Cb + D1Cr)))
@@ -469,27 +483,35 @@ def skin_detect(image_in: str, image_out: str):
   J = J1 + J2
   print(J.any())
   
+
+  cv2.imwrite('J.png', J)
+  cv2.imwrite('Cb.png', Cb)
+  cv2.imwrite('CbS.png', CbS)
+  cv2.imwrite('Cr.png', Cr)
+
   #print('CR')
   #print(Cr)
   # Skin pixels
   #Cr_i = Cr.astype(int)
   #Cb_i = Cb.astype(int)
-  Cr_i = Cr
-  Cb_i = Cb
-  mask5 = Cr_i - Cb_i >= I
+  mask5 = cv2.subtract(Cr, Cb) >= I
   print(mask5.any())
   #CbS_i = CbS.astype(int)
-  CbS_i = CbS
-  mask6 = np.absolute(Cb_i - CbS_i) <= J
+  print(type(Cb.dtype))
+  print(type(CbS.dtype))
+  mask6 = np.absolute(cv2.subtract(np.int8(Cb), np.int8(CbS))) <= J
   print('mask6')
   print(mask6.any())
   skinCond = np.logical_and(mask5, mask6)
   print(skinCond.any())
-  bw_final = np.multiply(skinCond, 255)
+  bw_final = skinCond * 255
   print(bw_final.any())
   #bw_final = np.multiply(mask6, 255)
   #bw_final = np.multiply(mask5, 255)
   
+  cv2.imwrite('mask1.png', mask5*255)
+  cv2.imwrite('mask2.png', mask6*255)
+
   #if int(Cr) - int(Cb) >= I and abs(int(Cb) - int(CbS)) <= J:
   #  bw_final[i,j] = 255
   print(time.time()-time_start)
