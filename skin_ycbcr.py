@@ -402,14 +402,17 @@ def skin_detect(image_in: str, image_out: str):
   HCb3 = np.multiply(HCbMask3, CbMin + hCb * ((Y - Y3) / (YMax - Y3)))
   HCb = HCb1 + HCb2 + HCb3
   print('\n HCB')
-  print(np.max(HCb))
-  print(np.min(HCb))
+  print(YMin - Y2)
+  print(np.max(HCb1))
+  print(np.min(HCb1))
+  #HCb1 = HCb1 + abs(np.min(HCb1))
+  #print(np.min(HCb1))
 
 
   #print('NPMAX')
   #print(np.max(np.uint8(HCb3)))
   cv2.imwrite('hcr.png', HCr)
-  cv2.imwrite('hcb.png', HCb)
+  cv2.imwrite('hcb.png', np.uint8(HCb1))
 
   dCr = Cr - CrMin
   DCr = HCr - CrMin
