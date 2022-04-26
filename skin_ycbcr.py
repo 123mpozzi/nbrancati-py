@@ -2,7 +2,7 @@ import cv2
 import numpy as np
 from math import ceil
 import sys
-import os
+
 
 bins = 256
 tolCr = 1
@@ -331,8 +331,3 @@ if __name__ == "__main__":
   image_in = sys.argv[1]
   image_out = sys.argv[2]
   skin_detect(image_in, image_out)
-
-  #for f in os.listdir('./test'):
-  #  print(f)
-  #  ff, _ = os.path.splitext(f)
-  #  skin_detect(os.path.join("./test", f), './testp/' +ff + '.png')
